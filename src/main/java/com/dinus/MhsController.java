@@ -1,8 +1,7 @@
 package com.dinus;
 
+import java.net.URL;
 import java.util.ResourceBundle;
-
-//import com.sun.jdi.Value;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -10,23 +9,18 @@ import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-//import javafx.scene.control.Alert;
+import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.Label;
-import javafx.fxml.Initializable;
-import java.net.URL;
-//import java.sql.Connection;
-//import java.util.ResourceBundle;
-import javafx.scene.control.Alert;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-
+import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 
 public class MhsController implements Initializable {
-    ObservableList<Mhs> listMhs ;
+    ObservableList<Mhs> listMhs;
     boolean flagEdit;
 
     @FXML
@@ -43,7 +37,6 @@ public class MhsController implements Initializable {
 
     @FXML
     private Button btnUpdate;
-
 
     @FXML
     private Label lblErr;
@@ -74,126 +67,207 @@ public class MhsController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        listMhs = FXCollections.observableArrayList() ;        
+        listMhs = FXCollections.observableArrayList();
         initTabel();
         loadData();
         setFilter();
         buttonAktif(false);
         teksAktif(false);
-        flagEdit=false;
-    } 
+        flagEdit = false;
+        
+        System.out.println("MhsController initialized successfully");
+    }
 
     @FXML
     void add(ActionEvent event) {
-        flagEdit=false;
+        flagEdit = false;
         teksAktif(true);
         buttonAktif(true);
+        clearTeks();
         tfNim.requestFocus();
+        updateStatus("Mode tambah data aktif", false);
     }
+
     @FXML
     void cancel(ActionEvent event) {
         teksAktif(false);
         clearTeks();
-        buttonAktif(false);  
+        buttonAktif(false);
+        updateStatus("Operasi dibatalkan", false);
     }
+
     @FXML
     void delete(ActionEvent event) {
+        int selectedIndex = tvMhs.getSelectionModel().getSelectedIndex();
+        if (selectedIndex < 0) {
+            showAlert(Alert.AlertType.WARNING, "Peringatan", "Silakan pilih data yang akan dihapus!");
+            return;
+        }
 
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "hapus data ?", ButtonType.YES,  ButtonType.CANCEL);
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Hapus data mahasiswa?", ButtonType.YES, ButtonType.CANCEL);
         alert.showAndWait();
+        
         if (alert.getResult() == ButtonType.YES) {
-            int idx=tvMhs.getSelectionModel().getSelectedIndex();
-            String nim=tvMhs.getItems().get(idx).getNim();
-            AksesDB.delDataMhs(nim);
-
-            Alert alert2 = new Alert(Alert.AlertType.INFORMATION);
-            alert2.setContentText("Delete Data Sukses..");
-            alert2.show();
-            loadData();                       
+            Mhs selectedMhs = tvMhs.getItems().get(selectedIndex);
+            AksesDB.delDataMhs(selectedMhs.getNim());
+            showAlert(Alert.AlertType.INFORMATION, "Sukses", "Data mahasiswa berhasil dihapus!");
+            loadData();
+            updateStatus("Data berhasil dihapus", true);
         }
     }
+
     @FXML
-    void edit(ActionEvent event) {        
+    void edit(ActionEvent event) {
+        int selectedIndex = tvMhs.getSelectionModel().getSelectedIndex();
+        if (selectedIndex < 0) {
+            showAlert(Alert.AlertType.WARNING, "Peringatan", "Silakan pilih data yang akan diedit!");
+            return;
+        }
+
         buttonAktif(true);
         teksAktif(true);
-        flagEdit=true;			
-        int idx=tvMhs.getSelectionModel().getSelectedIndex();
-        tfNim.setText(tvMhs.getItems().get(idx).getNim());
-        tfNama.setText(tvMhs.getItems().get(idx).getNama());
-        tfAlamat.setText(tvMhs.getItems().get(idx).getAlamat());        
+        flagEdit = true;
+        
+        Mhs selectedMhs = tvMhs.getItems().get(selectedIndex);
+        tfNim.setText(selectedMhs.getNim());
+        tfNama.setText(selectedMhs.getNama());
+        tfAlamat.setText(selectedMhs.getAlamat());
         tfNim.requestFocus();
+        updateStatus("Mode edit data aktif", false);
     }
+
     @FXML
     void update(ActionEvent event) {
-        String nim,nama,alamat,nim_lama;
-        nim=tfNim.getText();
-        nama=tfNama.getText();	
-        alamat=tfAlamat.getText();        
-        if (flagEdit==false){
-            AksesDB.addDataMhs(nim,nama,alamat);	
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setContentText("Insert Data Sukses..");
-            alert.show();			
-        }else {
-            int idx=tvMhs.getSelectionModel().getSelectedIndex();
-            nim_lama=tvMhs.getItems().get(idx).getNim();
-            //tvMhs.getItems().set(idx,m);
-            AksesDB.updateDataMhs(nim,nama,nim_lama,alamat);
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setContentText("Update Data Berhasil");
-            alert.show();
+        String nim = tfNim.getText().trim();
+        String nama = tfNama.getText().trim();
+        String alamat = tfAlamat.getText().trim();
+
+        if (nim.isEmpty() || nama.isEmpty() || alamat.isEmpty()) {
+            showAlert(Alert.AlertType.ERROR, "Error", "Semua field harus diisi!");
+            return;
         }
+
+        try {
+            if (flagEdit == false) {
+                AksesDB.addDataMhs(nim, nama, alamat);
+                showAlert(Alert.AlertType.INFORMATION, "Sukses", "Data mahasiswa berhasil ditambahkan!");
+                updateStatus("Data berhasil ditambahkan", true);
+            } else {
+                int idx = tvMhs.getSelectionModel().getSelectedIndex();
+                String nimLama = tvMhs.getItems().get(idx).getNim();
+                AksesDB.updateDataMhs(nim, nama, nimLama, alamat);
+                showAlert(Alert.AlertType.INFORMATION, "Sukses", "Data mahasiswa berhasil diperbarui!");
+                updateStatus("Data berhasil diperbarui", true);
+            }
+            
+            loadData();
+            flagEdit = false;
+            teksAktif(false);
+            clearTeks();
+            buttonAktif(false);
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Error", "Gagal menyimpan data: " + e.getMessage());
+        }
+    }
+
+    // Optional enhanced methods - akan berfungsi jika ada di FXML
+    @FXML
+    void exportToCSV(ActionEvent event) {
+        showAlert(Alert.AlertType.INFORMATION, "Export", "Fitur export CSV dalam pengembangan...");
+    }
+
+    @FXML
+    void showStatistics(ActionEvent event) {
+        showAlert(Alert.AlertType.INFORMATION, "Statistik", 
+                 "Total Mahasiswa: " + (listMhs != null ? listMhs.size() : 0));
+    }
+
+    @FXML
+    void refreshData(ActionEvent event) {
         loadData();
-        flagEdit=false;
-        teksAktif(false);
-        clearTeks();
-        buttonAktif(false);        
-    }     
-	public void buttonAktif(boolean nonAktif){
-		btnAdd.setDisable(nonAktif);
-		btnEdit.setDisable(nonAktif);
-		btnDel.setDisable(nonAktif);
-		btnUpdate.setDisable(!nonAktif);
-		btnCancel.setDisable(!nonAktif);
-	}     
-	public void teksAktif(boolean aktif){
-		tfNim.setEditable(aktif);
-		tfNama.setEditable(aktif);
-		tfAlamat.setEditable(aktif);
-	}
-	public void clearTeks(){
-		tfNim.setText("");
-		tfNama.setText("");
-		tfAlamat.setText("");
-	}    
-    void initTabel(){
-            nim.setCellValueFactory(new PropertyValueFactory<Mhs,String>("nim"));
-            nama.setCellValueFactory(new PropertyValueFactory<Mhs,String>("nama"));
-            alamat.setCellValueFactory(new PropertyValueFactory<Mhs,String>("alamat"));
+        updateStatus("Data berhasil di-refresh", true);
     }
-    void loadData(){
-        listMhs=AksesDB.getDataMhs();
-        tvMhs.setItems(listMhs);
+
+    @FXML
+    void showHelp(ActionEvent event) {
+        showAlert(Alert.AlertType.INFORMATION, "Bantuan", 
+                 "Cara penggunaan:\n- Klik Tambah untuk menambah data\n- Pilih data lalu klik Edit untuk mengubah\n- Pilih data lalu klik Hapus untuk menghapus");
     }
-     void setFilter(){
-        FilteredList<Mhs> filterData= new FilteredList<>(listMhs,b->true);
-       tfCariNama.textProperty().addListener((observable,oldValue,newValue)->{
-       filterData.setPredicate(Mhs->{
-          if (newValue.isEmpty()  || newValue==null){
-             return true;
-           }
-          String searchKeyword=newValue.toLowerCase();
-          if (Mhs.getNama().toLowerCase().indexOf(searchKeyword)> -1){
-              return true;
-          }else if (Mhs.getNim().toLowerCase().indexOf(searchKeyword)>-1){
-              return true;
-          }else
-              return false;
-       });           
-       });
-       SortedList<Mhs> sortedData = new SortedList<>(filterData);
-       sortedData.comparatorProperty().bind(tvMhs.comparatorProperty());
-       tvMhs.setItems(sortedData);
+
+    @FXML
+    void showAbout(ActionEvent event) {
+        showAlert(Alert.AlertType.INFORMATION, "Tentang", "Sistem KRS UDINUS v2.0");
     }
-     
+
+    private void showAlert(Alert.AlertType type, String title, String message) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void updateStatus(String message, boolean isSuccess) {
+        if (lblErr != null) {
+            lblErr.setText(message);
+            lblErr.setStyle(isSuccess ? 
+                "-fx-text-fill: #10b981; -fx-font-weight: bold;" : 
+                "-fx-text-fill: #ef4444; -fx-font-weight: bold;");
+        }
+    }
+
+    public void buttonAktif(boolean nonAktif) {
+        btnAdd.setDisable(nonAktif);
+        btnEdit.setDisable(nonAktif);
+        btnDel.setDisable(nonAktif);
+        btnUpdate.setDisable(!nonAktif);
+        btnCancel.setDisable(!nonAktif);
+    }
+
+    public void teksAktif(boolean aktif) {
+        tfNim.setEditable(aktif);
+        tfNama.setEditable(aktif);
+        tfAlamat.setEditable(aktif);
+    }
+
+    public void clearTeks() {
+        tfNim.setText("");
+        tfNama.setText("");
+        tfAlamat.setText("");
+    }
+
+    void initTabel() {
+        nim.setCellValueFactory(new PropertyValueFactory<Mhs, String>("nim"));
+        nama.setCellValueFactory(new PropertyValueFactory<Mhs, String>("nama"));
+        alamat.setCellValueFactory(new PropertyValueFactory<Mhs, String>("alamat"));
+    }
+
+    void loadData() {
+        listMhs = AksesDB.getDataMhs();
+        if (listMhs != null) {
+            tvMhs.setItems(listMhs);
+            setFilter();
+        }
+    }
+
+    void setFilter() {
+        if (listMhs == null || tfCariNama == null) return;
+        
+        FilteredList<Mhs> filterData = new FilteredList<>(listMhs, b -> true);
+        tfCariNama.textProperty().addListener((observable, oldValue, newValue) -> {
+            filterData.setPredicate(mhs -> {
+                if (newValue.isEmpty() || newValue == null) {
+                    return true;
+                }
+                String searchKeyword = newValue.toLowerCase();
+                return mhs.getNama().toLowerCase().indexOf(searchKeyword) > -1 ||
+                       mhs.getNim().toLowerCase().indexOf(searchKeyword) > -1 ||
+                       mhs.getAlamat().toLowerCase().indexOf(searchKeyword) > -1;
+            });
+        });
+        
+        SortedList<Mhs> sortedData = new SortedList<>(filterData);
+        sortedData.comparatorProperty().bind(tvMhs.comparatorProperty());
+        tvMhs.setItems(sortedData);
+    }
 }

@@ -11,40 +11,50 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="558.0" prefWidth="735.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.dinus.MhsSearchKrsController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" styleClass="root" stylesheets="@krs-styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.dinus.MhsSearchKrsController">
    <children>
-      <VBox prefHeight="558.0" prefWidth="735.0">
+      <VBox prefHeight="600.0" prefWidth="800.0">
          <children>
-            <Label alignment="CENTER" prefHeight="38.0" prefWidth="734.0" style="-fx-background-color: Blue;" text="Data Mahasiswa" textFill="#f8f3f3">
+            <!-- Header -->
+            <Label alignment="CENTER" prefHeight="60.0" prefWidth="800.0" styleClass="header-label" text="👤 Pilih Mahasiswa">
                <font>
-                  <Font name="Bradley Hand ITC" size="27.0" />
+                  <Font name="Segoe UI" size="24.0" />
                </font>
             </Label>
-            <HBox prefHeight="0.0" prefWidth="537.0" spacing="5.0">
+            
+            <!-- Search Section -->
+            <HBox prefHeight="60.0" prefWidth="800.0" spacing="15.0" styleClass="search-container">
                <children>
-                  <Label alignment="CENTER_RIGHT" prefHeight="17.0" prefWidth="144.0" text="Cari Nama/NIM" />
-                  <TextField fx:id="tfCariNama" prefHeight="25.0" prefWidth="331.0" />
-                  <Button fx:id="btnPilih" mnemonicParsing="false" onAction="#pilih" prefHeight="25.0" prefWidth="121.0" text="Pilih" />
+                  <Label alignment="CENTER_RIGHT" prefHeight="30.0" prefWidth="150.0" styleClass="search-label" text="Cari Nama/NIM:" />
+                  <TextField fx:id="tfCariNama" prefHeight="35.0" prefWidth="400.0" promptText="Ketik nama mahasiswa atau NIM..." styleClass="search-field" />
+                  <Button fx:id="btnPilih" mnemonicParsing="false" onAction="#pilih" prefHeight="35.0" prefWidth="120.0" styleClass="btn-primary" text="✅ Pilih" />
                </children>
                <padding>
-                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                  <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
                </padding>
             </HBox>
-            <AnchorPane prefHeight="205.0" prefWidth="735.0">
+            
+            <!-- Table Section -->
+            <AnchorPane prefHeight="420.0" prefWidth="800.0">
                <children>
-                  <TableView fx:id="tvMhs" layoutX="5.0" layoutY="-6.0" prefHeight="200.0" prefWidth="725.0">
+                  <TableView fx:id="tvMhs" layoutX="15.0" layoutY="10.0" prefHeight="380.0" prefWidth="770.0" styleClass="table-view">
                     <columns>
-                      <TableColumn fx:id="nim" prefWidth="139.0" text="NIM" />
-                      <TableColumn fx:id="nama" prefWidth="226.0" text="Nama" />
-                      <TableColumn fx:id="alamat" minWidth="0.0" prefWidth="350.0" text="Alamat" />
+                      <TableColumn fx:id="nim" prefWidth="180.0" text="NIM" />
+                      <TableColumn fx:id="nama" prefWidth="280.0" text="Nama Mahasiswa" />
+                      <TableColumn fx:id="alamat" minWidth="0.0" prefWidth="310.0" text="Alamat" />
                     </columns>
                   </TableView>
                </children>
             </AnchorPane>
-            <Label fx:id="lblErr" alignment="CENTER" prefHeight="38.0" prefWidth="736.0" style="-fx-background-color: LightBlue;" textFill="#ee340a">
+            
+            <!-- Error/Info Label -->
+            <Label fx:id="lblErr" alignment="CENTER" prefHeight="60.0" prefWidth="800.0" style="-fx-background-color: #f8f9fa; -fx-border-color: #dee2e6; -fx-border-radius: 8px; -fx-background-radius: 8px;" textFill="#dc3545">
                <font>
-                  <Font name="Bradley Hand ITC" size="27.0" />
+                  <Font name="Segoe UI" size="14.0" />
                </font>
+               <VBox.margin>
+                  <Insets bottom="15.0" left="15.0" right="15.0" />
+               </VBox.margin>
             </Label>
          </children>
       </VBox>

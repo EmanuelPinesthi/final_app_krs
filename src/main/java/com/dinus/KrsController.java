@@ -2,6 +2,7 @@ package com.dinus;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,6 +15,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -21,10 +23,14 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -113,14 +119,42 @@ public class KrsController implements Initializable {
         // Set initial state
         clearTeks();
         
-        // Add selection listener to table
+        // Add visual feedback for table selection
         tbKrs.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null && !flagEdit) {
                 // Enable edit and delete buttons when an item is selected
                 btnEdit.setDisable(false);
                 btnDelete.setDisable(false);
+                
+                // Add visual feedback with CSS
+                tbKrs.setStyle("-fx-selection-bar: linear-gradient(to right, #667eea, #764ba2);");
             }
         });
+        
+        // Add placeholder text and tooltips
+        tfCari.setPromptText("🔍 Cari data KRS...");
+        
+        // Add hover effects for buttons (will be handled by CSS)
+        addButtonTooltips();
+        
+        // Load custom CSS if needed
+        loadCustomStyles();
+    }
+    
+    private void addButtonTooltips() {
+        // Add tooltips for better UX
+        btnAdd.setTooltip(new javafx.scene.control.Tooltip("Tambah data KRS baru"));
+        btnEdit.setTooltip(new javafx.scene.control.Tooltip("Edit data KRS yang dipilih"));
+        btnDelete.setTooltip(new javafx.scene.control.Tooltip("Hapus data KRS yang dipilih"));
+        btnUpdate.setTooltip(new javafx.scene.control.Tooltip("Simpan perubahan data"));
+        btnCancel.setTooltip(new javafx.scene.control.Tooltip("Batalkan operasi"));
+        btnPilihJadwal.setTooltip(new javafx.scene.control.Tooltip("Pilih jadwal dari daftar"));
+        btnPilihMhs.setTooltip(new javafx.scene.control.Tooltip("Pilih mahasiswa dari daftar"));
+    }
+    
+    private void loadCustomStyles() {
+        // Add any additional styling logic here if needed
+        // This can include dynamic theme switching, etc.
     }
 
     private void initComboBox() {
@@ -130,47 +164,366 @@ public class KrsController implements Initializable {
 
     @FXML
     void pilihJadwal(ActionEvent event) {
-        Stage stage = new Stage();
-        Parent root;
+        System.out.println("pilihJadwal method called");
         try {
-            root = FXMLLoader.load(JadwalSearchKrsController.class.getResource("fJadwalSearchKrs.fxml"));
+            // Create FXML loader
+            FXMLLoader loader = new FXMLLoader();
+            
+            // Try to find the FXML file
+            URL fxmlUrl = getClass().getResource("fJadwalSearchKrs.fxml");
+            if (fxmlUrl == null) {
+                fxmlUrl = getClass().getResource("/fJadwalSearchKrs.fxml");
+            }
+            if (fxmlUrl == null) {
+                fxmlUrl = getClass().getResource("/com/dinus/fJadwalSearchKrs.fxml");
+            }
+            
+            if (fxmlUrl == null) {
+                // Create inline table dialog if FXML not found
+                showJadwalTableDialog();
+                return;
+            }
+            
+            loader.setLocation(fxmlUrl);
+            Parent root = loader.load();
+            
+            // Get controller
+            JadwalSearchKrsController controller = loader.getController();
+            
+            // Create and show dialog
+            Stage stage = new Stage();
             stage.setScene(new Scene(root));
-            stage.setTitle("Daftar Jadwal");
+            stage.setTitle("Pilih Jadwal Kuliah");
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(((Node) event.getSource()).getScene().getWindow());
             stage.showAndWait();
-            JadwalSearch j;
-            j = (JadwalSearch) stage.getUserData();
-            if (j != null) {
-                tfKodeJadwal.setText(j.getKodeJadwal());
-                tfNmMatkul.setText(j.getNamaMk());
-                selectedKodeMk = j.getKodeMk();
-                selectedKelas = j.getKelas();
+            
+            // Get selected data
+            JadwalSearch selectedJadwal = (JadwalSearch) stage.getUserData();
+            if (selectedJadwal != null) {
+                tfKodeJadwal.setText(selectedJadwal.getKodeJadwal());
+                tfNmMatkul.setText(selectedJadwal.getNamaMk());
+                selectedKodeMk = selectedJadwal.getKodeMk();
+                selectedKelas = selectedJadwal.getKelas();
+                
+                System.out.println("Selected: " + selectedJadwal.getKodeJadwal());
             }
-        } catch (IOException ex) {
-            Logger.getLogger(KrsController.class.getName()).log(Level.SEVERE, null, ex);
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            // If error, show inline table dialog
+            showJadwalTableDialog();
+        }
+    }
+    
+    private void showJadwalTableDialog() {
+        try {
+            // Create new stage for table dialog
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Pilih Jadwal Kuliah");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(btnPilihJadwal.getScene().getWindow());
+            
+            // Create table view
+            TableView<JadwalSearch> tableView = new TableView<>();
+            tableView.setPrefWidth(800);
+            tableView.setPrefHeight(400);
+            
+            // Create columns
+            TableColumn<JadwalSearch, String> colKodeJadwal = new TableColumn<>("Kode Jadwal");
+            colKodeJadwal.setCellValueFactory(new PropertyValueFactory<>("kodeJadwal"));
+            colKodeJadwal.setPrefWidth(120);
+            
+            TableColumn<JadwalSearch, String> colKodeMk = new TableColumn<>("Kode MK");
+            colKodeMk.setCellValueFactory(new PropertyValueFactory<>("kodeMk"));
+            colKodeMk.setPrefWidth(90);
+            
+            TableColumn<JadwalSearch, String> colNamaMk = new TableColumn<>("Matakuliah");
+            colNamaMk.setCellValueFactory(new PropertyValueFactory<>("namaMk"));
+            colNamaMk.setPrefWidth(200);
+            
+            TableColumn<JadwalSearch, String> colKelas = new TableColumn<>("Kelas");
+            colKelas.setCellValueFactory(new PropertyValueFactory<>("kelas"));
+            colKelas.setPrefWidth(70);
+            
+            TableColumn<JadwalSearch, String> colHari = new TableColumn<>("Hari");
+            colHari.setCellValueFactory(new PropertyValueFactory<>("hari"));
+            colHari.setPrefWidth(90);
+            
+            TableColumn<JadwalSearch, String> colJam = new TableColumn<>("Jam");
+            colJam.setCellValueFactory(new PropertyValueFactory<>("jam"));
+            colJam.setPrefWidth(120);
+            
+            TableColumn<JadwalSearch, String> colRuang = new TableColumn<>("Ruang");
+            colRuang.setCellValueFactory(new PropertyValueFactory<>("ruang"));
+            colRuang.setPrefWidth(110);
+            
+            tableView.getColumns().addAll(colKodeJadwal, colKodeMk, colNamaMk, colKelas, colHari, colJam, colRuang);
+            
+            // Load data
+            ObservableList<JadwalSearch> jadwalData = AksesDB.getDataJadwalSearch();
+            if (jadwalData != null) {
+                tableView.setItems(jadwalData);
+                System.out.println("Loaded " + jadwalData.size() + " jadwal records");
+            } else {
+                System.out.println("No jadwal data found");
+            }
+            
+            // Create search field
+            TextField searchField = new TextField();
+            searchField.setPromptText("Cari matakuliah atau kode mk...");
+            searchField.setPrefWidth(400);
+            
+            // Add search functionality
+            FilteredList<JadwalSearch> filteredData = new FilteredList<>(jadwalData, p -> true);
+            searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+                filteredData.setPredicate(jadwal -> {
+                    if (newValue == null || newValue.isEmpty()) {
+                        return true;
+                    }
+                    String lowerCaseFilter = newValue.toLowerCase();
+                    return jadwal.getNamaMk().toLowerCase().contains(lowerCaseFilter) ||
+                           jadwal.getKodeMk().toLowerCase().contains(lowerCaseFilter) ||
+                           jadwal.getKodeJadwal().toLowerCase().contains(lowerCaseFilter);
+                });
+            });
+            
+            SortedList<JadwalSearch> sortedData = new SortedList<>(filteredData);
+            sortedData.comparatorProperty().bind(tableView.comparatorProperty());
+            tableView.setItems(sortedData);
+            
+            // Create buttons
+            Button btnPilih = new Button("Pilih");
+            btnPilih.setStyle("-fx-background-color: #667eea; -fx-text-fill: white; -fx-padding: 8px 16px;");
+            btnPilih.setOnAction(e -> {
+                JadwalSearch selected = tableView.getSelectionModel().getSelectedItem();
+                if (selected != null) {
+                    dialogStage.setUserData(selected);
+                    dialogStage.close();
+                } else {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("Peringatan");
+                    alert.setHeaderText("Pilih Jadwal");
+                    alert.setContentText("Silakan pilih jadwal dari tabel!");
+                    alert.showAndWait();
+                }
+            });
+            
+            Button btnBatal = new Button("Batal");
+            btnBatal.setStyle("-fx-background-color: #6c757d; -fx-text-fill: white; -fx-padding: 8px 16px;");
+            btnBatal.setOnAction(e -> dialogStage.close());
+            
+            // Create layout
+            VBox layout = new VBox(10);
+            layout.setPadding(new javafx.geometry.Insets(15));
+            
+            // Header
+            Label header = new Label("Pilih Jadwal Kuliah");
+            header.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #333;");
+            
+            // Search box
+            HBox searchBox = new HBox(10);
+            searchBox.getChildren().addAll(new Label("Cari:"), searchField);
+            
+            // Button box
+            HBox buttonBox = new HBox(10);
+            buttonBox.getChildren().addAll(btnPilih, btnBatal);
+            
+            layout.getChildren().addAll(header, searchBox, tableView, buttonBox);
+            
+            // Set scene and show
+            Scene scene = new Scene(layout, 850, 550);
+            dialogStage.setScene(scene);
+            dialogStage.showAndWait();
+            
+            // Get result
+            JadwalSearch selectedJadwal = (JadwalSearch) dialogStage.getUserData();
+            if (selectedJadwal != null) {
+                tfKodeJadwal.setText(selectedJadwal.getKodeJadwal());
+                tfNmMatkul.setText(selectedJadwal.getNamaMk());
+                selectedKodeMk = selectedJadwal.getKodeMk();
+                selectedKelas = selectedJadwal.getKelas();
+                
+                System.out.println("Selected: " + selectedJadwal.getKodeJadwal());
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Tidak dapat menampilkan data jadwal");
+            alert.setContentText("Error: " + e.getMessage());
+            alert.showAndWait();
         }
     }
 
     @FXML
     void pilihMhs(ActionEvent event) {
-        Stage stage = new Stage();
-        Parent root;
+        System.out.println("pilihMhs method called");
         try {
-            root = FXMLLoader.load(MhsSearchKrsController.class.getResource("fMhsSearchKrs.fxml"));
+            // Try to find FXML file first
+            FXMLLoader loader = new FXMLLoader();
+            URL fxmlUrl = getClass().getResource("fMhsSearchKrs.fxml");
+            if (fxmlUrl == null) {
+                fxmlUrl = getClass().getResource("/fMhsSearchKrs.fxml");
+            }
+            if (fxmlUrl == null) {
+                fxmlUrl = getClass().getResource("/com/dinus/fMhsSearchKrs.fxml");
+            }
+            
+            if (fxmlUrl == null) {
+                // Create inline table dialog if FXML not found
+                showMhsTableDialog();
+                return;
+            }
+            
+            loader.setLocation(fxmlUrl);
+            Parent root = loader.load();
+            
+            // Get controller
+            MhsSearchKrsController controller = loader.getController();
+            
+            // Create and show dialog
+            Stage stage = new Stage();
             stage.setScene(new Scene(root));
-            stage.setTitle("Daftar Mahasiswa");
+            stage.setTitle("Pilih Mahasiswa");
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(((Node) event.getSource()).getScene().getWindow());
             stage.showAndWait();
-            MhsSearch m;
-            m = (MhsSearch) stage.getUserData();
-            if (m != null) {
-                tfNim.setText(m.getNim());
-                tfNmMhs.setText(m.getNama());
+            
+            // Get selected data
+            MhsSearch selectedMhs = (MhsSearch) stage.getUserData();
+            if (selectedMhs != null) {
+                tfNim.setText(selectedMhs.getNim());
+                tfNmMhs.setText(selectedMhs.getNama());
+                System.out.println("Selected: " + selectedMhs.getNim() + " - " + selectedMhs.getNama());
             }
-        } catch (IOException ex) {
-            Logger.getLogger(KrsController.class.getName()).log(Level.SEVERE, null, ex);
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            // If error, show inline table dialog
+            showMhsTableDialog();
+        }
+    }
+    
+    private void showMhsTableDialog() {
+        try {
+            // Create new stage for table dialog
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Pilih Mahasiswa");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(btnPilihMhs.getScene().getWindow());
+            
+            // Create table view
+            TableView<MhsSearch> tableView = new TableView<>();
+            tableView.setPrefWidth(700);
+            tableView.setPrefHeight(400);
+            
+            // Create columns
+            TableColumn<MhsSearch, String> colNim = new TableColumn<>("NIM");
+            colNim.setCellValueFactory(new PropertyValueFactory<>("nim"));
+            colNim.setPrefWidth(180);
+            
+            TableColumn<MhsSearch, String> colNama = new TableColumn<>("Nama Mahasiswa");
+            colNama.setCellValueFactory(new PropertyValueFactory<>("nama"));
+            colNama.setPrefWidth(250);
+            
+            TableColumn<MhsSearch, String> colAlamat = new TableColumn<>("Alamat");
+            colAlamat.setCellValueFactory(new PropertyValueFactory<>("alamat"));
+            colAlamat.setPrefWidth(270);
+            
+            tableView.getColumns().addAll(colNim, colNama, colAlamat);
+            
+            // Load data
+            ObservableList<MhsSearch> mhsData = AksesDB.getDataMhsSearch();
+            if (mhsData != null) {
+                tableView.setItems(mhsData);
+                System.out.println("Loaded " + mhsData.size() + " mahasiswa records");
+            } else {
+                System.out.println("No mahasiswa data found");
+            }
+            
+            // Create search field
+            TextField searchField = new TextField();
+            searchField.setPromptText("Cari nama atau NIM...");
+            searchField.setPrefWidth(400);
+            
+            // Add search functionality
+            FilteredList<MhsSearch> filteredData = new FilteredList<>(mhsData, p -> true);
+            searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+                filteredData.setPredicate(mhs -> {
+                    if (newValue == null || newValue.isEmpty()) {
+                        return true;
+                    }
+                    String lowerCaseFilter = newValue.toLowerCase();
+                    return mhs.getNama().toLowerCase().contains(lowerCaseFilter) ||
+                           mhs.getNim().toLowerCase().contains(lowerCaseFilter);
+                });
+            });
+            
+            SortedList<MhsSearch> sortedData = new SortedList<>(filteredData);
+            sortedData.comparatorProperty().bind(tableView.comparatorProperty());
+            tableView.setItems(sortedData);
+            
+            // Create buttons
+            Button btnPilih = new Button("Pilih");
+            btnPilih.setStyle("-fx-background-color: #667eea; -fx-text-fill: white; -fx-padding: 8px 16px;");
+            btnPilih.setOnAction(e -> {
+                MhsSearch selected = tableView.getSelectionModel().getSelectedItem();
+                if (selected != null) {
+                    dialogStage.setUserData(selected);
+                    dialogStage.close();
+                } else {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("Peringatan");
+                    alert.setHeaderText("Pilih Mahasiswa");
+                    alert.setContentText("Silakan pilih mahasiswa dari tabel!");
+                    alert.showAndWait();
+                }
+            });
+            
+            Button btnBatal = new Button("Batal");
+            btnBatal.setStyle("-fx-background-color: #6c757d; -fx-text-fill: white; -fx-padding: 8px 16px;");
+            btnBatal.setOnAction(e -> dialogStage.close());
+            
+            // Create layout
+            VBox layout = new VBox(10);
+            layout.setPadding(new javafx.geometry.Insets(15));
+            
+            // Header
+            Label header = new Label("Pilih Mahasiswa");
+            header.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #333;");
+            
+            // Search box
+            HBox searchBox = new HBox(10);
+            searchBox.getChildren().addAll(new Label("Cari:"), searchField);
+            
+            // Button box
+            HBox buttonBox = new HBox(10);
+            buttonBox.getChildren().addAll(btnPilih, btnBatal);
+            
+            layout.getChildren().addAll(header, searchBox, tableView, buttonBox);
+            
+            // Set scene and show
+            Scene scene = new Scene(layout, 750, 550);
+            dialogStage.setScene(scene);
+            dialogStage.showAndWait();
+            
+            // Get result
+            MhsSearch selectedMhs = (MhsSearch) dialogStage.getUserData();
+            if (selectedMhs != null) {
+                tfNim.setText(selectedMhs.getNim());
+                tfNmMhs.setText(selectedMhs.getNama());
+                System.out.println("Selected: " + selectedMhs.getNim() + " - " + selectedMhs.getNama());
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Tidak dapat menampilkan data mahasiswa");
+            alert.setContentText("Error: " + e.getMessage());
+            alert.showAndWait();
         }
     }
 

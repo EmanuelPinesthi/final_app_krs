@@ -1,14 +1,101 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: #fef1e4;" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.dinus.HomeController">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="650.0" prefWidth="1000.0" style="-fx-background-color: linear-gradient(to bottom, #f8f9fa, #e9ecef);" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.dinus.HomeController">
    <children>
-      <Label layoutX="140.0" layoutY="68.0" text="Home">
-         <font>
-            <Font size="22.0" />
-         </font></Label>
+      <!-- Header Section -->
+      <AnchorPane prefHeight="150.0" prefWidth="1000.0" style="-fx-background-color: linear-gradient(to right, #667eea 0%, #764ba2 100%);">
+         <children>
+            <Label alignment="CENTER" layoutX="50.0" layoutY="30.0" prefHeight="90.0" prefWidth="900.0" style="-fx-text-fill: white;" text="🎓 SISTEM INFORMASI AKADEMIK" textAlignment="CENTER">
+               <font>
+                  <Font name="System Bold" size="32.0" />
+               </font>
+            </Label>
+            <Label alignment="CENTER" layoutX="50.0" layoutY="100.0" prefHeight="30.0" prefWidth="900.0" style="-fx-text-fill: rgba(255,255,255,0.8);" text="Universitas Dian Nuswantoro - Dashboard Utama" textAlignment="CENTER">
+               <font>
+                  <Font name="System" size="16.0" />
+               </font>
+            </Label>
+         </children>
+      </AnchorPane>
+      
+      <!-- Welcome Section -->
+      <AnchorPane prefHeight="80.0" prefWidth="1000.0" style="-fx-background-color: white; -fx-border-color: #dee2e6; -fx-border-width: 0 0 1px 0;">
+         <children>
+            <Label fx:id="lblWelcome" layoutX="50.0" layoutY="20.0" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #495057;" text="👋 Selamat Datang di Sistem KRS!" />
+            <Label fx:id="lblDateTime" layoutX="50.0" layoutY="45.0" style="-fx-font-size: 14px; -fx-text-fill: #6c757d;" text="📅 Hari ini: Kamis, 3 Juli 2025" />
+            <Button layoutX="800.0" layoutY="25.0" mnemonicParsing="false" onAction="#refreshDashboard" prefHeight="30.0" prefWidth="120.0" style="-fx-background-color: #17a2b8; -fx-text-fill: white; -fx-border-radius: 15px; -fx-background-radius: 15px;" text="🔄 Refresh" />
+         </children>
+      </AnchorPane>
+      
+      <!-- Quick Stats Section -->
+      <AnchorPane prefHeight="150.0" prefWidth="1000.0" style="-fx-background-color: white; -fx-padding: 20px;">
+         <children>
+            <Label layoutX="30.0" layoutY="10.0" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #495057;" text="📊 Statistik Cepat" />
+            
+            <HBox layoutX="30.0" layoutY="40.0" spacing="20.0">
+               <children>
+                  <!-- Mahasiswa Card -->
+                  <VBox prefHeight="80.0" prefWidth="180.0" style="-fx-background-color: #e3f2fd; -fx-border-color: #2196f3; -fx-border-radius: 10px; -fx-background-radius: 10px; -fx-padding: 15px;">
+                     <children>
+                        <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1976d2;" text="👨‍🎓 Total Mahasiswa" />
+                        <Label fx:id="lblTotalMhs" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #0d47a1;" text="0" />
+                        <Label style="-fx-font-size: 12px; -fx-text-fill: #424242;" text="Terdaftar aktif" />
+                     </children>
+                  </VBox>
+                  
+                  <!-- Matakuliah Card -->
+                  <VBox prefHeight="80.0" prefWidth="180.0" style="-fx-background-color: #f3e5f5; -fx-border-color: #9c27b0; -fx-border-radius: 10px; -fx-background-radius: 10px; -fx-padding: 15px;">
+                     <children>
+                        <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #7b1fa2;" text="📚 Total Matakuliah" />
+                        <Label fx:id="lblTotalMatkul" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #4a148c;" text="0" />
+                        <Label style="-fx-font-size: 12px; -fx-text-fill: #424242;" text="Tersedia" />
+                     </children>
+                  </VBox>
+                  
+                  <!-- Jadwal Card -->
+                  <VBox prefHeight="80.0" prefWidth="180.0" style="-fx-background-color: #e8f5e8; -fx-border-color: #4caf50; -fx-border-radius: 10px; -fx-background-radius: 10px; -fx-padding: 15px;">
+                     <children>
+                        <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #388e3c;" text="🗓️ Total Jadwal" />
+                        <Label fx:id="lblTotalJadwal" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1b5e20;" text="0" />
+                        <Label style="-fx-font-size: 12px; -fx-text-fill: #424242;" text="Kelas aktif" />
+                     </children>
+                  </VBox>
+                  
+                  <!-- KRS Card -->
+                  <VBox prefHeight="80.0" prefWidth="180.0" style="-fx-background-color: #fff3e0; -fx-border-color: #ff9800; -fx-border-radius: 10px; -fx-background-radius: 10px; -fx-padding: 15px;">
+                     <children>
+                        <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #f57c00;" text="📋 Total KRS" />
+                        <Label fx:id="lblTotalKrs" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #e65100;" text="0" />
+                        <Label style="-fx-font-size: 12px; -fx-text-fill: #424242;" text="Terdaftar" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+         </children>
+      </AnchorPane>
+      
+      <!-- Quick Actions Section -->
+      
+      
+      <!-- Recent Activity Section -->
+      <AnchorPane prefHeight="120.0" prefWidth="1000.0" style="-fx-background-color: #f8f9fa; -fx-padding: 20px;">
+         <children>
+            <Label layoutX="30.0" layoutY="10.0" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #495057;" text="🕒 Aktivitas Terbaru" />
+            <VBox fx:id="vboxRecentActivity" layoutX="30.0" layoutY="40.0" prefHeight="70.0" prefWidth="940.0" spacing="5.0">
+               <children>
+                  <Label style="-fx-text-fill: #6c757d;" text="📝 Belum ada aktivitas terbaru" />
+               </children>
+            </VBox>
+         </children>
+      </AnchorPane>
    </children>
-</AnchorPane>
+</VBox>
