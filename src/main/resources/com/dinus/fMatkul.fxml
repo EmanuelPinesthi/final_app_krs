@@ -98,16 +98,16 @@
             
             <!-- Kode Matakuliah Row -->
             <Label layoutX="50.0" layoutY="35.0" style="-fx-font-weight: bold;" text="📋 Kode MK:" />
-            <TextField fx:id="tfKodeMk" layoutX="150.0" layoutY="30.0" prefHeight="30.0" prefWidth="150.0" promptText="101, 102..." />
+            <TextField fx:id="tfKodeMk" layoutX="150.0" layoutY="30.0" prefHeight="30.0" prefWidth="180.0" promptText="Masukkan Kode Matakuliah" />
             
             <!-- Nama Matakuliah Row -->
             <Label layoutX="50.0" layoutY="75.0" style="-fx-font-weight: bold;" text="📚 Nama MK:" />
-            <TextField fx:id="tfNamaMk" layoutX="150.0" layoutY="70.0" prefHeight="30.0" prefWidth="400.0" promptText="Masukkan nama matakuliah..." />
+            <TextField fx:id="tfNamaMk" layoutX="150.0" layoutY="70.0" prefHeight="30.0" prefWidth="250.0" promptText="Masukkan Nama Matakuliah..." />
             
             <!-- SKS Row -->
             <Label layoutX="50.0" layoutY="115.0" style="-fx-font-weight: bold;" text="🎯 SKS:" />
-            <TextField fx:id="tfSks" layoutX="150.0" layoutY="110.0" prefHeight="30.0" prefWidth="100.0" promptText="1-6" />
-            <Label layoutX="260.0" layoutY="117.0" style="-fx-text-fill: #666;" text="(Sistem Kredit Semester)" />
+            <TextField fx:id="tfSks" layoutX="150.0" layoutY="110.0" prefHeight="30.0" prefWidth="180.0" promptText="Masukkan Jumlah SKS" />
+            <Label layoutX="350.0" layoutY="117.0" style="-fx-text-fill: #666;" text="(Sistem Kredit Semester)" />
             
             <!-- Button Row -->
             <HBox layoutX="50.0" layoutY="160.0" spacing="15.0">
