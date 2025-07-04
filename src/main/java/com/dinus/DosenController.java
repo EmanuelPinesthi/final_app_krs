@@ -68,6 +68,8 @@ public class DosenController implements Initializable {
         buttonAktif(false);
         teksAktif(false);
         flagEdit = false;
+        
+        System.out.println("DosenController initialized successfully");
     } 
 
     @FXML
@@ -75,67 +77,134 @@ public class DosenController implements Initializable {
         flagEdit = false;
         teksAktif(true);
         buttonAktif(true);
+        clearTeks();
         tfKodeDsn.requestFocus();
+        updateStatus("Mode tambah dosen aktif", false);
     }
 
     @FXML
     void cancel(ActionEvent event) {
         teksAktif(false);
         clearTeks();
-        buttonAktif(false);  
+        buttonAktif(false);
+        updateStatus("Operasi dibatalkan", false);
     }
 
     @FXML
     void delete(ActionEvent event) {
+        int selectedIndex = tvDosen.getSelectionModel().getSelectedIndex();
+        if (selectedIndex < 0) {
+            showAlert(Alert.AlertType.WARNING, "Peringatan", "Silakan pilih data yang akan dihapus!");
+            return;
+        }
+
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Hapus data dosen?", ButtonType.YES, ButtonType.CANCEL);
         alert.showAndWait();
         if (alert.getResult() == ButtonType.YES) {
-            int idx = tvDosen.getSelectionModel().getSelectedIndex();
-            String kodeDsn = tvDosen.getItems().get(idx).getKodeDsn();
-            AksesDB.delDataDosen(kodeDsn);
-
-            Alert alert2 = new Alert(Alert.AlertType.INFORMATION);
-            alert2.setContentText("Delete Data Sukses..");
-            alert2.show();
-            loadData();                       
+            Dosen selectedDosen = tvDosen.getItems().get(selectedIndex);
+            AksesDB.delDataDosen(selectedDosen.getKodeDsn());
+            showAlert(Alert.AlertType.INFORMATION, "Sukses", "Data dosen berhasil dihapus!");
+            loadData();
+            updateStatus("Data berhasil dihapus", true);
         }
     }
 
     @FXML
-    void edit(ActionEvent event) {        
+    void edit(ActionEvent event) {
+        int selectedIndex = tvDosen.getSelectionModel().getSelectedIndex();
+        if (selectedIndex < 0) {
+            showAlert(Alert.AlertType.WARNING, "Peringatan", "Silakan pilih data yang akan diedit!");
+            return;
+        }
+
         buttonAktif(true);
         teksAktif(true);
-        flagEdit = true;			
-        int idx = tvDosen.getSelectionModel().getSelectedIndex();
-        tfKodeDsn.setText(tvDosen.getItems().get(idx).getKodeDsn());
-        tfNamaDsn.setText(tvDosen.getItems().get(idx).getNamaDsn());
+        flagEdit = true;
+        
+        Dosen selectedDosen = tvDosen.getItems().get(selectedIndex);
+        tfKodeDsn.setText(selectedDosen.getKodeDsn());
+        tfNamaDsn.setText(selectedDosen.getNamaDsn());
         tfKodeDsn.requestFocus();
+        updateStatus("Mode edit dosen aktif", false);
     }
 
     @FXML
     void update(ActionEvent event) {
-        String kodeDsn, namaDsn, kodeDsnLama;
-        kodeDsn = tfKodeDsn.getText();
-        namaDsn = tfNamaDsn.getText();	
-        
-        if (flagEdit == false) {
-            AksesDB.addDataDosen(kodeDsn, namaDsn);	
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setContentText("Insert Data Sukses..");
-            alert.show();			
-        } else {
-            int idx = tvDosen.getSelectionModel().getSelectedIndex();
-            kodeDsnLama = tvDosen.getItems().get(idx).getKodeDsn();
-            AksesDB.updateDataDosen(kodeDsn, namaDsn, kodeDsnLama);
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setContentText("Update Data Berhasil");
-            alert.show();
+        String kodeDsn = tfKodeDsn.getText().trim();
+        String namaDsn = tfNamaDsn.getText().trim();
+
+        if (kodeDsn.isEmpty() || namaDsn.isEmpty()) {
+            showAlert(Alert.AlertType.ERROR, "Error", "Semua field harus diisi!");
+            return;
         }
+
+        try {
+            if (flagEdit == false) {
+                AksesDB.addDataDosen(kodeDsn, namaDsn);
+                showAlert(Alert.AlertType.INFORMATION, "Sukses", "Data dosen berhasil ditambahkan!");
+                updateStatus("Data berhasil ditambahkan", true);
+            } else {
+                int idx = tvDosen.getSelectionModel().getSelectedIndex();
+                String kodeDsnLama = tvDosen.getItems().get(idx).getKodeDsn();
+                AksesDB.updateDataDosen(kodeDsn, namaDsn, kodeDsnLama);
+                showAlert(Alert.AlertType.INFORMATION, "Sukses", "Data dosen berhasil diperbarui!");
+                updateStatus("Data berhasil diperbarui", true);
+            }
+            
+            loadData();
+            flagEdit = false;
+            teksAktif(false);
+            clearTeks();
+            buttonAktif(false);
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Error", "Gagal menyimpan data: " + e.getMessage());
+        }
+    }
+
+    // Optional enhanced methods
+    @FXML
+    void exportToCSV(ActionEvent event) {
+        showAlert(Alert.AlertType.INFORMATION, "Export", "Fitur export CSV dalam pengembangan...");
+    }
+
+    @FXML
+    void showStatistics(ActionEvent event) {
+        showAlert(Alert.AlertType.INFORMATION, "Statistik", 
+                 "Total Dosen: " + (listDosen != null ? listDosen.size() : 0));
+    }
+
+    @FXML
+    void refreshData(ActionEvent event) {
         loadData();
-        flagEdit = false;
-        teksAktif(false);
-        clearTeks();
-        buttonAktif(false);        
+        updateStatus("Data berhasil di-refresh", true);
+    }
+
+    @FXML
+    void showHelp(ActionEvent event) {
+        showAlert(Alert.AlertType.INFORMATION, "Bantuan", 
+                 "Cara penggunaan:\n- Klik Tambah untuk menambah dosen\n- Pilih data lalu klik Edit untuk mengubah\n- Pilih data lalu klik Hapus untuk menghapus");
+    }
+
+    @FXML
+    void showAbout(ActionEvent event) {
+        showAlert(Alert.AlertType.INFORMATION, "Tentang", "Modul Dosen - Sistem KRS UDINUS v2.0");
+    }
+
+    private void showAlert(Alert.AlertType type, String title, String message) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void updateStatus(String message, boolean isSuccess) {
+        if (lblErr != null) {
+            lblErr.setText(message);
+            lblErr.setStyle(isSuccess ? 
+                "-fx-text-fill: #10b981; -fx-font-weight: bold;" : 
+                "-fx-text-fill: #ef4444; -fx-font-weight: bold;");
+        }
     }
 
     public void buttonAktif(boolean nonAktif) {
@@ -163,25 +232,27 @@ public class DosenController implements Initializable {
 
     void loadData() {
         listDosen = AksesDB.getDataDosen();
-        tvDosen.setItems(listDosen);
+        if (listDosen != null) {
+            tvDosen.setItems(listDosen);
+            setFilter();
+        }
     }
 
     void setFilter() {
+        if (listDosen == null || tfCariNama == null) return;
+        
         FilteredList<Dosen> filterData = new FilteredList<>(listDosen, b -> true);
         tfCariNama.textProperty().addListener((observable, oldValue, newValue) -> {
-            filterData.setPredicate(Dosen -> {
+            filterData.setPredicate(dosen -> {
                 if (newValue.isEmpty() || newValue == null) {
                     return true;
                 }
                 String searchKeyword = newValue.toLowerCase();
-                if (Dosen.getNamaDsn().toLowerCase().indexOf(searchKeyword) > -1) {
-                    return true;
-                } else if (Dosen.getKodeDsn().toLowerCase().indexOf(searchKeyword) > -1) {
-                    return true;
-                } else
-                    return false;
+                return dosen.getNamaDsn().toLowerCase().indexOf(searchKeyword) > -1 ||
+                       dosen.getKodeDsn().toLowerCase().indexOf(searchKeyword) > -1;
             });           
         });
+        
         SortedList<Dosen> sortedData = new SortedList<>(filterData);
         sortedData.comparatorProperty().bind(tvDosen.comparatorProperty());
         tvDosen.setItems(sortedData);

@@ -11,73 +11,60 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="558.0" prefWidth="735.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.dinus.DosenController">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.dinus.DosenController">
    <children>
-      <VBox prefHeight="558.0" prefWidth="735.0">
+      <!-- Header Section -->
+      <Label alignment="CENTER" prefHeight="60.0" prefWidth="900.0" style="-fx-background-color: linear-gradient(to right, #667eea 0%, #764ba2 100%);" text="👨‍🏫 DATA DOSEN" textFill="WHITE">
+         <font>
+            <Font name="System Bold" size="20.0" />
+         </font>
+      </Label>
+      
+      <!-- Search Section -->
+      <AnchorPane prefHeight="50.0" prefWidth="900.0" style="-fx-background-color: white; -fx-padding: 10px;">
          <children>
-            <Label alignment="CENTER" prefHeight="38.0" prefWidth="734.0" style="-fx-background-color: Blue;" text="Data Dosen" textFill="#f8f3f3">
-               <font>
-                  <Font name="Bradley Hand ITC" size="27.0" />
-               </font>
-            </Label>
-            <HBox prefHeight="0.0" prefWidth="537.0" spacing="5.0">
-               <children>
-                  <Label alignment="CENTER_RIGHT" prefHeight="17.0" prefWidth="144.0" text="Cari Kode/Nama" />
-                  <TextField fx:id="tfCariNama" prefHeight="25.0" prefWidth="331.0" />
-               </children>
-               <padding>
-                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-               </padding>
-            </HBox>
-            <AnchorPane prefHeight="205.0" prefWidth="735.0">
-               <children>
-                  <TableView fx:id="tvDosen" layoutX="5.0" layoutY="-6.0" prefHeight="200.0" prefWidth="725.0">
-                    <columns>
-                      <TableColumn fx:id="kodeDsn" prefWidth="139.0" text="Kode Dosen" />
-                      <TableColumn fx:id="namaDsn" prefWidth="586.0" text="Nama Dosen" />
-                    </columns>
-                  </TableView>
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="247.0" prefWidth="735.0">
-               <children>
-                  <Label layoutX="124.0" layoutY="62.0" text="Kode Dosen" />
-                  <Label layoutX="119.0" layoutY="107.0" text="Nama Dosen" />
-                  <TextField fx:id="tfKodeDsn" layoutX="187.0" layoutY="58.0" prefHeight="25.0" prefWidth="312.0" />
-                  <TextField fx:id="tfNamaDsn" layoutX="187.0" layoutY="103.0" prefHeight="25.0" prefWidth="312.0" />
-                  <Button fx:id="btnAdd" layoutX="181.0" layoutY="175.0" mnemonicParsing="false" onAction="#add" style="-fx-background-color: navy;" text="Add" textFill="#f5efef">
-                     <font>
-                        <Font name="Calibri" size="16.0" />
-                     </font>
-                  </Button>
-                  <Button fx:id="btnEdit" layoutX="240.0" layoutY="175.0" mnemonicParsing="false" onAction="#edit" style="-fx-background-color: navy;" text="Edit" textFill="#f8f1f1">
-                     <font>
-                        <Font name="Calibri" size="16.0" />
-                     </font>
-                  </Button>
-                  <Button fx:id="btnDel" layoutX="297.0" layoutY="175.0" mnemonicParsing="false" onAction="#delete" style="-fx-background-color: navy;" text="Delete" textFill="#f5eded">
-                     <font>
-                        <Font name="Calibri" size="16.0" />
-                     </font>
-                  </Button>
-                  <Button fx:id="btnUpdate" layoutX="370.0" layoutY="175.0" mnemonicParsing="false" onAction="#update" style="-fx-background-color: navy;" text="Update" textFill="#f2eded">
-                     <font>
-                        <Font name="Calibri" size="16.0" />
-                     </font>
-                  </Button>
-                  <Button fx:id="btnCancel" layoutX="448.0" layoutY="175.0" mnemonicParsing="false" onAction="#cancel" style="-fx-background-color: navy;" text="Cancel" textFill="#f2eded">
-                     <font>
-                        <Font name="Calibri" size="16.0" />
-                     </font>
-                  </Button>
-               </children>
-            </AnchorPane>
-            <Label fx:id="lblErr" alignment="CENTER" prefHeight="38.0" prefWidth="736.0" style="-fx-background-color: LightBlue;" textFill="#ee340a">
-               <font>
-                  <Font name="Bradley Hand ITC" size="27.0" />
-               </font>
-            </Label>
+            <Label layoutX="20.0" layoutY="15.0" style="-fx-font-weight: bold;" text="🔍 Cari Dosen:" />
+            <TextField fx:id="tfCariNama" layoutX="120.0" layoutY="12.0" prefHeight="25.0" prefWidth="400.0" promptText="Cari berdasarkan nama dosen atau kode dosen..." />
          </children>
-      </VBox>
+      </AnchorPane>
+      
+      <!-- Table Section -->
+      <AnchorPane prefHeight="250.0" prefWidth="900.0">
+         <children>
+            <TableView fx:id="tvDosen" layoutX="10.0" layoutY="5.0" prefHeight="240.0" prefWidth="880.0">
+              <columns>
+                <TableColumn fx:id="kodeDsn" prefWidth="200.0" text="Kode Dosen" />
+                <TableColumn fx:id="namaDsn" prefWidth="680.0" text="Nama Dosen" />
+              </columns>
+            </TableView>
+         </children>
+      </AnchorPane>
+      
+      <!-- Form Section -->
+      <AnchorPane prefHeight="240.0" prefWidth="900.0" style="-fx-background-color: white; -fx-padding: 20px; -fx-border-color: #e9ecef; -fx-border-width: 1px 0 0 0;">
+         <children>
+            <!-- Status Message -->
+            <Label fx:id="lblErr" layoutX="20.0" layoutY="5.0" style="-fx-font-weight: bold;" />
+            
+            <!-- Kode Dosen Row -->
+            <Label layoutX="50.0" layoutY="35.0" style="-fx-font-weight: bold;" text="👤 Kode Dosen:" />
+            <TextField fx:id="tfKodeDsn" layoutX="150.0" layoutY="30.0" prefHeight="30.0" prefWidth="250.0" promptText="Masukkan kode dosen..." />
+            
+            <!-- Nama Dosen Row -->
+            <Label layoutX="50.0" layoutY="75.0" style="-fx-font-weight: bold;" text="📝 Nama Dosen:" />
+            <TextField fx:id="tfNamaDsn" layoutX="150.0" layoutY="70.0" prefHeight="30.0" prefWidth="450.0" promptText="Masukkan nama lengkap dosen..." />
+            
+            <!-- Button Row -->
+            <HBox layoutX="50.0" layoutY="125.0" spacing="15.0">
+               <children>
+                  <Button fx:id="btnAdd" mnemonicParsing="false" onAction="#add" prefHeight="35.0" prefWidth="90.0" style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-border-radius: 6px; -fx-background-radius: 6px;" text="➕ Tambah" />
+                  <Button fx:id="btnEdit" mnemonicParsing="false" onAction="#edit" prefHeight="35.0" prefWidth="90.0" style="-fx-background-color: #ffc107; -fx-text-fill: black; -fx-border-radius: 6px; -fx-background-radius: 6px;" text="✏️ Edit" />
+                  <Button fx:id="btnDel" mnemonicParsing="false" onAction="#delete" prefHeight="35.0" prefWidth="90.0" style="-fx-background-color: #dc3545; -fx-text-fill: white; -fx-border-radius: 6px; -fx-background-radius: 6px;" text="🗑️ Hapus" />
+                  <Button fx:id="btnUpdate" mnemonicParsing="false" onAction="#update" prefHeight="35.0" prefWidth="90.0" style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-border-radius: 6px; -fx-background-radius: 6px;" text="💾 Simpan" />
+                  <Button fx:id="btnCancel" mnemonicParsing="false" onAction="#cancel" prefHeight="35.0" prefWidth="90.0" style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-border-radius: 6px; -fx-background-radius: 6px;" text="❌ Batal" />
+               </children>
+            </HBox>
+         </children>
+      </AnchorPane>
    </children>
-</AnchorPane>
+</VBox>

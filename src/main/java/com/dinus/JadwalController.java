@@ -19,6 +19,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -54,6 +55,9 @@ public class JadwalController implements Initializable {
 
     @FXML
     private Button btnPilihDosen;
+
+    @FXML
+    private Label lblErr;
 
     @FXML
     private TableColumn<Jadwal, String> hari;
@@ -116,8 +120,10 @@ public class JadwalController implements Initializable {
             stage.showAndWait();         
             Matakuliah m;
             m = (Matakuliah) stage.getUserData();            
-            tfKodematkul.setText(m.getKodeMk());
-            tfNmMatkul.setText(m.getNamaMk());
+            if (m != null) {
+                tfKodematkul.setText(m.getKodeMk());
+                tfNmMatkul.setText(m.getNamaMk());
+            }
         } catch (IOException ex) {
             Logger.getLogger(JadwalController.class.getName()).log(Level.SEVERE, null, ex);
         }         
@@ -136,8 +142,10 @@ public class JadwalController implements Initializable {
             stage.showAndWait();         
             Dosen d;
             d = (Dosen) stage.getUserData();            
-            tfKodeDosen.setText(d.getKodeDsn());
-            tfNmDosen.setText(d.getNamaDsn());
+            if (d != null) {
+                tfKodeDosen.setText(d.getKodeDsn());
+                tfNmDosen.setText(d.getNamaDsn());
+            }
         } catch (IOException ex) {
             Logger.getLogger(JadwalController.class.getName()).log(Level.SEVERE, null, ex);
         }         
@@ -148,7 +156,9 @@ public class JadwalController implements Initializable {
         flagEdit = false;
         teksAktif(true);
         buttonAktif(true);
+        clearTeks();
         tfKodematkul.requestFocus();
+        updateStatus("Mode tambah jadwal aktif", false);
     }
 
     @FXML
@@ -156,69 +166,135 @@ public class JadwalController implements Initializable {
         teksAktif(false);
         clearTeks();
         buttonAktif(false);
+        updateStatus("Operasi dibatalkan", false);
     }
 
     @FXML
     void delete(ActionEvent event) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "hapus data ?", ButtonType.YES, ButtonType.CANCEL);
+        int selectedIndex = tbJadwal.getSelectionModel().getSelectedIndex();
+        if (selectedIndex < 0) {
+            showAlert(Alert.AlertType.WARNING, "Peringatan", "Silakan pilih data yang akan dihapus!");
+            return;
+        }
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Hapus data jadwal?", ButtonType.YES, ButtonType.CANCEL);
         alert.showAndWait();
         if (alert.getResult() == ButtonType.YES) {
-            int idx = tbJadwal.getSelectionModel().getSelectedIndex();            
-            String vKodeMk = tbJadwal.getItems().get(idx).getKodeMk();
-            String vKelas = tbJadwal.getItems().get(idx).getKelas();
-            AksesDB.delDataJadwal(vKodeMk, vKelas);
-            Alert alert2 = new Alert(Alert.AlertType.INFORMATION);
-            alert2.setContentText("Delete Data Sukses..");
-            alert2.show();
-            loadData();                       
+            Jadwal selectedJadwal = tbJadwal.getItems().get(selectedIndex);
+            AksesDB.delDataJadwal(selectedJadwal.getKodeMk(), selectedJadwal.getKelas());
+            showAlert(Alert.AlertType.INFORMATION, "Sukses", "Data jadwal berhasil dihapus!");
+            loadData();
+            updateStatus("Data berhasil dihapus", true);
         }
     }
 
     @FXML
     void edit(ActionEvent event) {
+        int selectedIndex = tbJadwal.getSelectionModel().getSelectedIndex();
+        if (selectedIndex < 0) {
+            showAlert(Alert.AlertType.WARNING, "Peringatan", "Silakan pilih data yang akan diedit!");
+            return;
+        }
+
         buttonAktif(true);
         teksAktif(true);
-        flagEdit = true;			
-        int idx = tbJadwal.getSelectionModel().getSelectedIndex();
-        tfKodematkul.setText(tbJadwal.getItems().get(idx).getKodeMk());
-        tfKelas.setText(tbJadwal.getItems().get(idx).getKelas());
-        tfNmMatkul.setText(tbJadwal.getItems().get(idx).getNamaMk());        
-        tfHari.setText(tbJadwal.getItems().get(idx).getHari());
-        tfJam.setText(tbJadwal.getItems().get(idx).getJam());
-        tfRuang.setText(tbJadwal.getItems().get(idx).getRuang());
-        tfKodeDosen.setText(tbJadwal.getItems().get(idx).getKodeDsn());
-        tfNmDosen.setText(tbJadwal.getItems().get(idx).getNamaDsn());
+        flagEdit = true;
+        
+        Jadwal selectedJadwal = tbJadwal.getItems().get(selectedIndex);
+        tfKodematkul.setText(selectedJadwal.getKodeMk());
+        tfKelas.setText(selectedJadwal.getKelas());
+        tfNmMatkul.setText(selectedJadwal.getNamaMk());        
+        tfHari.setText(selectedJadwal.getHari());
+        tfJam.setText(selectedJadwal.getJam());
+        tfRuang.setText(selectedJadwal.getRuang());
+        tfKodeDosen.setText(selectedJadwal.getKodeDsn());
+        tfNmDosen.setText(selectedJadwal.getNamaDsn());
         tfKodematkul.requestFocus();
+        updateStatus("Mode edit jadwal aktif", false);
     }
 
     @FXML
     void update(ActionEvent event) {
-        String vKelas, vKodeMk, vHari, vJam, vRuang, vKodeDsn;
-        vKelas = tfKelas.getText();
-        vKodeMk = tfKodematkul.getText();
-        vHari = tfHari.getText();
-        vJam = tfJam.getText();
-        vRuang = tfRuang.getText();
-        vKodeDsn = tfKodeDosen.getText();
+        String vKelas = tfKelas.getText().trim();
+        String vKodeMk = tfKodematkul.getText().trim();
+        String vHari = tfHari.getText().trim();
+        String vJam = tfJam.getText().trim();
+        String vRuang = tfRuang.getText().trim();
+        String vKodeDsn = tfKodeDosen.getText().trim();
 
-        if (flagEdit == false) {
-            AksesDB.addDataJadwal(vKodeMk, vKelas, vHari, vJam, vRuang, vKodeDsn);	
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setContentText("Insert Data Sukses..");
-            alert.show();			
-        } else {
-            int idx = tbJadwal.getSelectionModel().getSelectedIndex();
-            vKelas = tbJadwal.getItems().get(idx).getKelas();
-            AksesDB.updateDataJadwal(vKodeMk, vKelas, vHari, vJam, vRuang, vKodeDsn);
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setContentText("Update Data Berhasil");
-            alert.show();
+        if (vKelas.isEmpty() || vKodeMk.isEmpty() || vHari.isEmpty() || 
+            vJam.isEmpty() || vRuang.isEmpty() || vKodeDsn.isEmpty()) {
+            showAlert(Alert.AlertType.ERROR, "Error", "Semua field harus diisi!");
+            return;
         }
+
+        try {
+            if (flagEdit == false) {
+                AksesDB.addDataJadwal(vKodeMk, vKelas, vHari, vJam, vRuang, vKodeDsn);
+                showAlert(Alert.AlertType.INFORMATION, "Sukses", "Data jadwal berhasil ditambahkan!");
+                updateStatus("Data berhasil ditambahkan", true);
+            } else {
+                int idx = tbJadwal.getSelectionModel().getSelectedIndex();
+                String kelasLama = tbJadwal.getItems().get(idx).getKelas();
+                AksesDB.updateDataJadwal(vKodeMk, vKelas, vHari, vJam, vRuang, vKodeDsn);
+                showAlert(Alert.AlertType.INFORMATION, "Sukses", "Data jadwal berhasil diperbarui!");
+                updateStatus("Data berhasil diperbarui", true);
+            }
+            
+            loadData();
+            flagEdit = false;
+            teksAktif(false);
+            clearTeks();
+            buttonAktif(false);
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Error", "Gagal menyimpan data: " + e.getMessage());
+        }
+    }
+
+    // Optional enhanced methods
+    @FXML
+    void exportToCSV(ActionEvent event) {
+        showAlert(Alert.AlertType.INFORMATION, "Export", "Fitur export CSV dalam pengembangan...");
+    }
+
+    @FXML
+    void showStatistics(ActionEvent event) {
+        showAlert(Alert.AlertType.INFORMATION, "Statistik", 
+                 "Total Jadwal: " + (listJadwal != null ? listJadwal.size() : 0));
+    }
+
+    @FXML
+    void refreshData(ActionEvent event) {
         loadData();
-        flagEdit = false;
-        teksAktif(false);
-        clearTeks();
-        buttonAktif(false);    
+        updateStatus("Data berhasil di-refresh", true);
+    }
+
+    @FXML
+    void showHelp(ActionEvent event) {
+        showAlert(Alert.AlertType.INFORMATION, "Bantuan", 
+                 "Cara penggunaan:\n- Klik Tambah untuk menambah jadwal\n- Pilih matakuliah dan dosen menggunakan tombol pencarian\n- Isi semua field yang diperlukan");
+    }
+
+    @FXML
+    void showAbout(ActionEvent event) {
+        showAlert(Alert.AlertType.INFORMATION, "Tentang", "Modul Jadwal - Sistem KRS UDINUS v2.0");
+    }
+
+    private void showAlert(Alert.AlertType type, String title, String message) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void updateStatus(String message, boolean isSuccess) {
+        if (lblErr != null) {
+            lblErr.setText(message);
+            lblErr.setStyle(isSuccess ? 
+                "-fx-text-fill: #10b981; -fx-font-weight: bold;" : 
+                "-fx-text-fill: #ef4444; -fx-font-weight: bold;");
+        }
     }
     
     public void buttonAktif(boolean nonAktif) {
@@ -231,13 +307,15 @@ public class JadwalController implements Initializable {
     
     public void teksAktif(boolean aktif) {
         tfKelas.setEditable(aktif);
-        tfKodematkul.setEditable(aktif);
-        tfNmMatkul.setEditable(aktif);
+        tfKodematkul.setEditable(false); // Read-only, diisi melalui dialog
+        tfNmMatkul.setEditable(false);   // Read-only
         tfHari.setEditable(aktif);
         tfJam.setEditable(aktif);
         tfRuang.setEditable(aktif);
-        tfKodeDosen.setEditable(aktif);
-        tfNmDosen.setEditable(aktif);
+        tfKodeDosen.setEditable(false);  // Read-only, diisi melalui dialog
+        tfNmDosen.setEditable(false);    // Read-only
+        btnPilih.setDisable(!aktif);
+        btnPilihDosen.setDisable(!aktif);
     }
     
     public void clearTeks() {
@@ -270,31 +348,39 @@ public class JadwalController implements Initializable {
         buttonAktif(false);
         teksAktif(false);
         flagEdit = false;
+        
+        System.out.println("JadwalController initialized successfully");
     }      
     
     void loadData() {
         listJadwal = AksesDB.getDataJadwal();
-        tbJadwal.setItems(listJadwal);
+        if (listJadwal != null) {
+            tbJadwal.setItems(listJadwal);
+            setFilter();
+        }
     }      
     
     void setFilter() {
+        if (listJadwal == null || tfCari == null) return;
+        
         FilteredList<Jadwal> filterData = new FilteredList<>(listJadwal, b -> true);
         tfCari.textProperty().addListener((observable, oldValue, newValue) -> {
-            filterData.setPredicate(Jadwal -> {
+            filterData.setPredicate(jadwal -> {
                 if (newValue.isEmpty() || newValue == null) {
                     return true;
                 }
                 String searchKeyword = newValue.toLowerCase();
-                if (Jadwal.getNamaMk().toLowerCase().indexOf(searchKeyword) > -1) {
-                    return true;
-                } else if (Jadwal.getKodeMk().toLowerCase().indexOf(searchKeyword) > -1) {
-                    return true;
-                } else
-                    return false;
+                return jadwal.getNamaMk().toLowerCase().indexOf(searchKeyword) > -1 ||
+                       jadwal.getKodeMk().toLowerCase().indexOf(searchKeyword) > -1 ||
+                       jadwal.getKelas().toLowerCase().indexOf(searchKeyword) > -1 ||
+                       jadwal.getHari().toLowerCase().indexOf(searchKeyword) > -1 ||
+                       jadwal.getRuang().toLowerCase().indexOf(searchKeyword) > -1 ||
+                       jadwal.getNamaDsn().toLowerCase().indexOf(searchKeyword) > -1;
             });           
         });
+        
         SortedList<Jadwal> sortedData = new SortedList<>(filterData);
         sortedData.comparatorProperty().bind(tbJadwal.comparatorProperty());
         tbJadwal.setItems(sortedData);
-    }      
+    }
 }

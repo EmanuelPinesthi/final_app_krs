@@ -63,6 +63,9 @@ public class KrsController implements Initializable {
     private ComboBox<String> cbStatus;
 
     @FXML
+    private Label lblErr;
+
+    @FXML
     private TableColumn<Krs, String> kodeJadwal;
 
     @FXML
@@ -125,20 +128,16 @@ public class KrsController implements Initializable {
                 // Enable edit and delete buttons when an item is selected
                 btnEdit.setDisable(false);
                 btnDelete.setDisable(false);
-                
-                // Add visual feedback with CSS
-                tbKrs.setStyle("-fx-selection-bar: linear-gradient(to right, #667eea, #764ba2);");
             }
         });
         
         // Add placeholder text and tooltips
         tfCari.setPromptText("🔍 Cari data KRS...");
         
-        // Add hover effects for buttons (will be handled by CSS)
+        // Add tooltips for better UX
         addButtonTooltips();
         
-        // Load custom CSS if needed
-        loadCustomStyles();
+        System.out.println("KrsController initialized successfully");
     }
     
     private void addButtonTooltips() {
@@ -150,11 +149,6 @@ public class KrsController implements Initializable {
         btnCancel.setTooltip(new javafx.scene.control.Tooltip("Batalkan operasi"));
         btnPilihJadwal.setTooltip(new javafx.scene.control.Tooltip("Pilih jadwal dari daftar"));
         btnPilihMhs.setTooltip(new javafx.scene.control.Tooltip("Pilih mahasiswa dari daftar"));
-    }
-    
-    private void loadCustomStyles() {
-        // Add any additional styling logic here if needed
-        // This can include dynamic theme switching, etc.
     }
 
     private void initComboBox() {
@@ -301,11 +295,7 @@ public class KrsController implements Initializable {
                     dialogStage.setUserData(selected);
                     dialogStage.close();
                 } else {
-                    Alert alert = new Alert(Alert.AlertType.WARNING);
-                    alert.setTitle("Peringatan");
-                    alert.setHeaderText("Pilih Jadwal");
-                    alert.setContentText("Silakan pilih jadwal dari tabel!");
-                    alert.showAndWait();
+                    showAlert(Alert.AlertType.WARNING, "Peringatan", "Silakan pilih jadwal dari tabel!");
                 }
             });
             
@@ -349,11 +339,7 @@ public class KrsController implements Initializable {
             
         } catch (Exception e) {
             e.printStackTrace();
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setHeaderText("Tidak dapat menampilkan data jadwal");
-            alert.setContentText("Error: " + e.getMessage());
-            alert.showAndWait();
+            showAlert(Alert.AlertType.ERROR, "Error", "Tidak dapat menampilkan data jadwal: " + e.getMessage());
         }
     }
 
@@ -474,11 +460,7 @@ public class KrsController implements Initializable {
                     dialogStage.setUserData(selected);
                     dialogStage.close();
                 } else {
-                    Alert alert = new Alert(Alert.AlertType.WARNING);
-                    alert.setTitle("Peringatan");
-                    alert.setHeaderText("Pilih Mahasiswa");
-                    alert.setContentText("Silakan pilih mahasiswa dari tabel!");
-                    alert.showAndWait();
+                    showAlert(Alert.AlertType.WARNING, "Peringatan", "Silakan pilih mahasiswa dari tabel!");
                 }
             });
             
@@ -519,11 +501,7 @@ public class KrsController implements Initializable {
             
         } catch (Exception e) {
             e.printStackTrace();
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setHeaderText("Tidak dapat menampilkan data mahasiswa");
-            alert.setContentText("Error: " + e.getMessage());
-            alert.showAndWait();
+            showAlert(Alert.AlertType.ERROR, "Error", "Tidak dapat menampilkan data mahasiswa: " + e.getMessage());
         }
     }
 
@@ -534,6 +512,7 @@ public class KrsController implements Initializable {
         buttonAktif(true);
         clearTeks();
         tfKodeJadwal.requestFocus();
+        updateStatus("Mode tambah KRS aktif", false);
     }
 
     @FXML
@@ -541,15 +520,14 @@ public class KrsController implements Initializable {
         teksAktif(false);
         clearTeks();
         buttonAktif(false);
+        updateStatus("Operasi dibatalkan", false);
     }
 
     @FXML
     void delete(ActionEvent event) {
         int selectedIndex = tbKrs.getSelectionModel().getSelectedIndex();
         if (selectedIndex < 0) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setContentText("Silakan pilih data yang akan dihapus!");
-            alert.show();
+            showAlert(Alert.AlertType.WARNING, "Peringatan", "Silakan pilih data yang akan dihapus!");
             return;
         }
         
@@ -559,10 +537,9 @@ public class KrsController implements Initializable {
             Krs selectedKrs = tbKrs.getItems().get(selectedIndex);
             AksesDB.delDataKrs(selectedKrs.getKodeMk(), selectedKrs.getKelas(), selectedKrs.getNim());
             
-            Alert alert2 = new Alert(Alert.AlertType.INFORMATION);
-            alert2.setContentText("Delete Data Sukses..");
-            alert2.show();
+            showAlert(Alert.AlertType.INFORMATION, "Sukses", "Data KRS berhasil dihapus!");
             loadData();
+            updateStatus("Data berhasil dihapus", true);
         }
     }
 
@@ -570,9 +547,7 @@ public class KrsController implements Initializable {
     void edit(ActionEvent event) {
         int selectedIndex = tbKrs.getSelectionModel().getSelectedIndex();
         if (selectedIndex < 0) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setContentText("Silakan pilih data yang akan diedit!");
-            alert.show();
+            showAlert(Alert.AlertType.WARNING, "Peringatan", "Silakan pilih data yang akan diedit!");
             return;
         }
         
@@ -599,55 +574,88 @@ public class KrsController implements Initializable {
         originalNim = selectedKrs.getNim();
         
         tfKodeJadwal.requestFocus();
+        updateStatus("Mode edit KRS aktif", false);
     }
 
     @FXML
     void update(ActionEvent event) {
         // Validasi input
         if (selectedKodeMk == null || selectedKelas == null || tfNim.getText().trim().isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setContentText("Silakan lengkapi semua data!");
-            alert.show();
+            showAlert(Alert.AlertType.ERROR, "Error", "Silakan lengkapi semua data!");
             return;
         }
         
         String nim = tfNim.getText().trim();
         String status = cbStatus.getValue();
 
-        if (flagEdit == false) {
-            // Add new data
-            try {
+        try {
+            if (flagEdit == false) {
+                // Add new data
                 AksesDB.addDataKrs(selectedKodeMk, selectedKelas, nim, status);
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setContentText("Insert Data Sukses..");
-                alert.show();
-            } catch (Exception e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setContentText("Error: " + e.getMessage());
-                alert.show();
-                return;
-            }
-        } else {
-            // Update existing data
-            try {
+                showAlert(Alert.AlertType.INFORMATION, "Sukses", "Data KRS berhasil ditambahkan!");
+                updateStatus("Data berhasil ditambahkan", true);
+            } else {
+                // Update existing data
                 AksesDB.updateDataKrs(selectedKodeMk, selectedKelas, nim, status, 
                                     originalKodeMk, originalKelas, originalNim);
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setContentText("Update Data Berhasil");
-                alert.show();
-            } catch (Exception e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setContentText("Error: " + e.getMessage());
-                alert.show();
-                return;
+                showAlert(Alert.AlertType.INFORMATION, "Sukses", "Data KRS berhasil diperbarui!");
+                updateStatus("Data berhasil diperbarui", true);
             }
+            
+            loadData();
+            flagEdit = false;
+            teksAktif(false);
+            clearTeks();
+            buttonAktif(false);
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Error", "Gagal menyimpan data: " + e.getMessage());
         }
-        
+    }
+
+    // Optional enhanced methods
+    @FXML
+    void exportToCSV(ActionEvent event) {
+        showAlert(Alert.AlertType.INFORMATION, "Export", "Fitur export CSV dalam pengembangan...");
+    }
+
+    @FXML
+    void showStatistics(ActionEvent event) {
+        showAlert(Alert.AlertType.INFORMATION, "Statistik", 
+                 "Total Data KRS: " + (listKrs != null ? listKrs.size() : 0));
+    }
+
+    @FXML
+    void refreshData(ActionEvent event) {
         loadData();
-        flagEdit = false;
-        teksAktif(false);
-        clearTeks();
-        buttonAktif(false);
+        updateStatus("Data berhasil di-refresh", true);
+    }
+
+    @FXML
+    void showHelp(ActionEvent event) {
+        showAlert(Alert.AlertType.INFORMATION, "Bantuan", 
+                 "Cara penggunaan:\n- Klik Tambah untuk menambah KRS\n- Pilih jadwal dan mahasiswa menggunakan tombol pencarian\n- Pilih status: baru atau ulang");
+    }
+
+    @FXML
+    void showAbout(ActionEvent event) {
+        showAlert(Alert.AlertType.INFORMATION, "Tentang", "Modul KRS - Sistem KRS UDINUS v2.0");
+    }
+
+    private void showAlert(Alert.AlertType type, String title, String message) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void updateStatus(String message, boolean isSuccess) {
+        if (lblErr != null) {
+            lblErr.setText(message);
+            lblErr.setStyle(isSuccess ? 
+                "-fx-text-fill: #10b981; -fx-font-weight: bold;" : 
+                "-fx-text-fill: #ef4444; -fx-font-weight: bold;");
+        }
     }
 
     public void buttonAktif(boolean nonAktif) {
@@ -704,6 +712,8 @@ public class KrsController implements Initializable {
     }
 
     void setFilter() {
+        if (listKrs == null || tfCari == null) return;
+        
         FilteredList<Krs> filterData = new FilteredList<>(listKrs, b -> true);
         tfCari.textProperty().addListener((observable, oldValue, newValue) -> {
             filterData.setPredicate(krs -> {
@@ -711,35 +721,17 @@ public class KrsController implements Initializable {
                     return true;
                 }
                 String searchKeyword = newValue.toLowerCase();
-                if (krs.getNamaMk().toLowerCase().indexOf(searchKeyword) > -1) {
-                    return true;
-                } else if (krs.getKodeMk().toLowerCase().indexOf(searchKeyword) > -1) {
-                    return true;
-                } else if (krs.getNamaMhs().toLowerCase().indexOf(searchKeyword) > -1) {
-                    return true;
-                } else if (krs.getNim().toLowerCase().indexOf(searchKeyword) > -1) {
-                    return true;
-                } else
-                    return false;
+                return krs.getNamaMk().toLowerCase().indexOf(searchKeyword) > -1 ||
+                       krs.getKodeMk().toLowerCase().indexOf(searchKeyword) > -1 ||
+                       krs.getNamaMhs().toLowerCase().indexOf(searchKeyword) > -1 ||
+                       krs.getNim().toLowerCase().indexOf(searchKeyword) > -1 ||
+                       krs.getKodeJadwal().toLowerCase().indexOf(searchKeyword) > -1 ||
+                       krs.getStatus().toLowerCase().indexOf(searchKeyword) > -1;
             });
         });
+        
         SortedList<Krs> sortedData = new SortedList<>(filterData);
         sortedData.comparatorProperty().bind(tbKrs.comparatorProperty());
         tbKrs.setItems(sortedData);
-    }
-
-    // Helper methods untuk mengekstrak kode_mk dan kelas dari kode jadwal
-    private String getKodeMkFromKodeJadwal(String kodeJadwal) {
-        if (kodeJadwal != null && kodeJadwal.contains("-")) {
-            return kodeJadwal.split("-")[0];
-        }
-        return "";
-    }
-
-    private String getKelasFromKodeJadwal(String kodeJadwal) {
-        if (kodeJadwal != null && kodeJadwal.contains("-")) {
-            return kodeJadwal.split("-")[1];
-        }
-        return "";
     }
 }

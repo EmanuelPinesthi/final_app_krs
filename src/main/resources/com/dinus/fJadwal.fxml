@@ -7,59 +7,87 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="950.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.dinus.JadwalController">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="650.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.dinus.JadwalController">
    <children>
-      <Label alignment="CENTER" prefHeight="70.0" prefWidth="950.0" style="-fx-background-color: blue;" text="Form Data Jadwal" textFill="#fcfcf6">
+      <!-- Header Section -->
+      <Label alignment="CENTER" prefHeight="60.0" prefWidth="1100.0" style="-fx-background-color: linear-gradient(to right, #667eea 0%, #764ba2 100%);" text="📅 DATA JADWAL KULIAH" textFill="WHITE">
          <font>
-            <Font name="Comic Sans MS" size="28.0" />
+            <Font name="System Bold" size="20.0" />
          </font>
       </Label>
-      <AnchorPane prefHeight="49.0" prefWidth="950.0">
+      
+      <!-- Search Section -->
+      <AnchorPane prefHeight="50.0" prefWidth="1100.0" style="-fx-background-color: white; -fx-padding: 10px;">
          <children>
-            <Label layoutX="31.0" layoutY="10.0" prefHeight="18.0" prefWidth="79.0" text="Data dicari" />
-            <TextField fx:id="tfCari" layoutX="140.0" layoutY="10.0" prefHeight="26.0" prefWidth="587.0" />
+            <Label layoutX="20.0" layoutY="15.0" style="-fx-font-weight: bold;" text="🔍 Cari Jadwal:" />
+            <TextField fx:id="tfCari" layoutX="120.0" layoutY="12.0" prefHeight="25.0" prefWidth="500.0" promptText="Cari berdasarkan nama matakuliah atau kode matakuliah..." />
          </children>
-         <padding>
-            <Insets top="5.0" />
-         </padding>
       </AnchorPane>
-      <TableView fx:id="tbJadwal" maxWidth="-Infinity" prefHeight="193.0" prefWidth="940.0">
-        <columns>          
-          <TableColumn fx:id="kodeMk" prefWidth="86.0" text="KodeMk" />
-          <TableColumn fx:id="namaMk" prefWidth="180.0" text="Matakuliah" />
-          <TableColumn fx:id="kelas" prefWidth="80.0" text="Kelas" />            
-            <TableColumn fx:id="hari" prefWidth="100.0" text="Hari" />
-            <TableColumn fx:id="jam" prefWidth="120.0" text="Jam" />
-            <TableColumn fx:id="ruang" prefWidth="80.0" text="Ruang" />
-            <TableColumn fx:id="namaDsn" prefWidth="200.0" text="Dosen" />
-        </columns>
-      </TableView>
-      <AnchorPane prefHeight="360.0" prefWidth="950.0">
+      
+      <!-- Table Section -->
+      <AnchorPane prefHeight="280.0" prefWidth="1100.0">
          <children>
-            <Label layoutX="130.0" layoutY="39.0" text="Kode Matakuliah" />
-            <Label layoutX="152.0" layoutY="74.0" text="Kelas" />            
-            <Label layoutX="196.0" layoutY="105.0" text="Hari" />
-            <Label layoutX="196.0" layoutY="137.0" text="Jam" />
-            <Label layoutX="189.0" layoutY="171.0" text="Ruang" />
-            <Label layoutX="143.0" layoutY="205.0" text="Kode Dosen" />            
-            <TextField fx:id="tfKodematkul" layoutX="232.0" layoutY="35.0" prefHeight="25.0" prefWidth="79.0" />
-            <TextField fx:id="tfKelas" layoutX="232.0" layoutY="67.0" prefHeight="25.0" prefWidth="490.0" />
-            <TextField fx:id="tfHari" layoutX="232.0" layoutY="101.0" prefHeight="25.0" prefWidth="490.0" />
-            <TextField fx:id="tfJam" layoutX="232.0" layoutY="133.0" prefHeight="25.0" prefWidth="490.0" />
-            <TextField fx:id="tfRuang" layoutX="232.0" layoutY="167.0" prefHeight="25.0" prefWidth="490.0" />
-            <TextField fx:id="tfKodeDosen" layoutX="232.0" layoutY="201.0" prefHeight="25.0" prefWidth="79.0" />
-            <Button fx:id="btnAdd" layoutX="95.0" layoutY="281.0" mnemonicParsing="false" onAction="#add" prefHeight="25.0" prefWidth="72.0" text="Add" />
-            <Button fx:id="btnEdit" layoutX="174.0" layoutY="281.0" mnemonicParsing="false" onAction="#edit" prefHeight="25.0" prefWidth="72.0" text="Edit" />
-            <Button fx:id="btnDelete" layoutX="261.0" layoutY="281.0" mnemonicParsing="false" onAction="#delete" prefHeight="25.0" prefWidth="72.0" text="Delete" />
-            <Button fx:id="btnUpdate" layoutX="353.0" layoutY="281.0" mnemonicParsing="false" onAction="#update" prefHeight="25.0" prefWidth="72.0" text="Update" />
-            <Button fx:id="btnCancel" layoutX="434.0" layoutY="281.0" mnemonicParsing="false" onAction="#cancel" prefHeight="25.0" prefWidth="72.0" text="Cancel" />
-            <TextField fx:id="tfNmMatkul" layoutX="340.0" layoutY="35.0" prefHeight="25.0" prefWidth="383.0" />
-            <Button fx:id="btnPilih" layoutX="314.0" layoutY="35.0" mnemonicParsing="false" onAction="#pilihMatkul" prefHeight="25.0" prefWidth="22.0" text="..." />
-            <TextField fx:id="tfNmDosen" layoutX="340.0" layoutY="201.0" prefHeight="25.0" prefWidth="383.0" />
-            <Button fx:id="btnPilihDosen" layoutX="314.0" layoutY="201.0" mnemonicParsing="false" onAction="#pilihDosen" prefHeight="25.0" prefWidth="22.0" text="..." />
+            <TableView fx:id="tbJadwal" layoutX="10.0" layoutY="5.0" prefHeight="270.0" prefWidth="1080.0">
+              <columns>          
+                <TableColumn fx:id="kodeMk" prefWidth="100.0" text="Kode MK" />
+                <TableColumn fx:id="namaMk" prefWidth="250.0" text="Matakuliah" />
+                <TableColumn fx:id="kelas" prefWidth="80.0" text="Kelas" />            
+                <TableColumn fx:id="hari" prefWidth="100.0" text="Hari" />
+                <TableColumn fx:id="jam" prefWidth="150.0" text="Jam" />
+                <TableColumn fx:id="ruang" prefWidth="100.0" text="Ruang" />
+                <TableColumn fx:id="namaDsn" prefWidth="300.0" text="Dosen Pengampu" />
+              </columns>
+            </TableView>
+         </children>
+      </AnchorPane>
+      
+      <!-- Form Section -->
+      <AnchorPane prefHeight="320.0" prefWidth="1100.0" style="-fx-background-color: white; -fx-padding: 20px; -fx-border-color: #e9ecef; -fx-border-width: 1px 0 0 0;">
+         <children>
+            <!-- Status Message -->
+            <Label fx:id="lblErr" layoutX="20.0" layoutY="5.0" style="-fx-font-weight: bold;" />
+            
+            <!-- First Row: Matakuliah -->
+            <Label layoutX="50.0" layoutY="35.0" style="-fx-font-weight: bold;" text="📚 Matakuliah:" />
+            <TextField fx:id="tfKodematkul" layoutX="150.0" layoutY="30.0" prefHeight="30.0" prefWidth="100.0" promptText="Kode MK" styleClass="readonly-field" />
+            <Button fx:id="btnPilih" layoutX="255.0" layoutY="30.0" mnemonicParsing="false" onAction="#pilihMatkul" prefHeight="30.0" prefWidth="30.0" style="-fx-background-color: #667eea; -fx-text-fill: white;" text="📋" />
+            <TextField fx:id="tfNmMatkul" layoutX="295.0" layoutY="30.0" prefHeight="30.0" prefWidth="350.0" promptText="Nama matakuliah akan muncul di sini..." styleClass="readonly-field" />
+            
+            <!-- Second Row: Kelas -->
+            <Label layoutX="50.0" layoutY="75.0" style="-fx-font-weight: bold;" text="🏫 Kelas:" />
+            <TextField fx:id="tfKelas" layoutX="150.0" layoutY="70.0" prefHeight="30.0" prefWidth="150.0" promptText="Masukkan kelas..." />
+            
+            <!-- Third Row: Hari & Jam -->
+            <Label layoutX="50.0" layoutY="115.0" style="-fx-font-weight: bold;" text="📅 Hari:" />
+            <TextField fx:id="tfHari" layoutX="150.0" layoutY="110.0" prefHeight="30.0" prefWidth="150.0" promptText="Hari kuliah..." />
+            
+            <Label layoutX="330.0" layoutY="115.0" style="-fx-font-weight: bold;" text="🕐 Jam:" />
+            <TextField fx:id="tfJam" layoutX="380.0" layoutY="110.0" prefHeight="30.0" prefWidth="200.0" promptText="Jam kuliah (08:00-10:00)" />
+            
+            <!-- Fourth Row: Ruang -->
+            <Label layoutX="50.0" layoutY="155.0" style="-fx-font-weight: bold;" text="🏢 Ruang:" />
+            <TextField fx:id="tfRuang" layoutX="150.0" layoutY="150.0" prefHeight="30.0" prefWidth="200.0" promptText="Ruang kuliah..." />
+            
+            <!-- Fifth Row: Dosen -->
+            <Label layoutX="50.0" layoutY="195.0" style="-fx-font-weight: bold;" text="👨‍🏫 Dosen:" />
+            <TextField fx:id="tfKodeDosen" layoutX="150.0" layoutY="190.0" prefHeight="30.0" prefWidth="100.0" promptText="Kode Dosen" styleClass="readonly-field" />
+            <Button fx:id="btnPilihDosen" layoutX="255.0" layoutY="190.0" mnemonicParsing="false" onAction="#pilihDosen" prefHeight="30.0" prefWidth="30.0" style="-fx-background-color: #667eea; -fx-text-fill: white;" text="👤" />
+            <TextField fx:id="tfNmDosen" layoutX="295.0" layoutY="190.0" prefHeight="30.0" prefWidth="350.0" promptText="Nama dosen akan muncul di sini..." styleClass="readonly-field" />
+            
+            <!-- Button Row -->
+            <HBox layoutX="50.0" layoutY="240.0" spacing="15.0">
+               <children>
+                  <Button fx:id="btnAdd" mnemonicParsing="false" onAction="#add" prefHeight="35.0" prefWidth="90.0" style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-border-radius: 6px; -fx-background-radius: 6px;" text="➕ Tambah" />
+                  <Button fx:id="btnEdit" mnemonicParsing="false" onAction="#edit" prefHeight="35.0" prefWidth="90.0" style="-fx-background-color: #ffc107; -fx-text-fill: black; -fx-border-radius: 6px; -fx-background-radius: 6px;" text="✏️ Edit" />
+                  <Button fx:id="btnDelete" mnemonicParsing="false" onAction="#delete" prefHeight="35.0" prefWidth="90.0" style="-fx-background-color: #dc3545; -fx-text-fill: white; -fx-border-radius: 6px; -fx-background-radius: 6px;" text="🗑️ Hapus" />
+                  <Button fx:id="btnUpdate" mnemonicParsing="false" onAction="#update" prefHeight="35.0" prefWidth="90.0" style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-border-radius: 6px; -fx-background-radius: 6px;" text="💾 Simpan" />
+                  <Button fx:id="btnCancel" mnemonicParsing="false" onAction="#cancel" prefHeight="35.0" prefWidth="90.0" style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-border-radius: 6px; -fx-background-radius: 6px;" text="❌ Batal" />
+               </children>
+            </HBox>
          </children>
       </AnchorPane>
    </children>
