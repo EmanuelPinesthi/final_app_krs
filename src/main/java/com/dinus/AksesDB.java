@@ -346,10 +346,15 @@ public class AksesDB {
         ObservableList<JadwalSearch> listJadwal = FXCollections.observableArrayList();
         try {
             Connection c = KoneksiDB.getConn();
+            // PERBAIKAN: Gunakan query yang sama dengan getDataJadwal() 
+            // untuk memastikan konsistensi data
             String sql = "SELECT CONCAT(j.kode_mk, '-', j.kelas) as kode_jadwal, " +
                         "j.kode_mk, m.nama_mk, j.kelas, j.hari, j.jam, j.ruang " +
                         "FROM jadwal j " +
-                        "JOIN matakuliah m ON j.kode_mk = m.kode_mk";
+                        "JOIN matakuliah m ON j.kode_mk = m.kode_mk " +
+                        "JOIN dosen d ON j.kode_dsn = d.kode_dsn " +  // TAMBAHAN: Filter berdasarkan dosen
+                        "ORDER BY j.kode_mk, j.kelas";  // TAMBAHAN: Urutkan data
+            
             PreparedStatement ps = c.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
             while(rs.next()){
